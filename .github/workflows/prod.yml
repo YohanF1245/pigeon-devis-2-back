@@ -56,8 +56,20 @@ jobs:
     environment: production
 
     steps:
-      - name: Deploy to production
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+          if_key_exists: fail
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
         run: |
-          echo "Déploiement en production"
-          # Ici, ajoutez les commandes de déploiement vers votre serveur de production
-          # Par exemple, SSH vers le serveur et pull/restart des containers 
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
+            cd pigeon-devis-2-back && \
+            docker compose pull && \
+            docker compose up -d --force-recreate && \
+            docker system prune -f" 

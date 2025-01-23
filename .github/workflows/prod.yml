@@ -66,12 +66,32 @@ jobs:
       - name: Adding Known Hosts
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Setup PostgreSQL
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -u postgres psql << 'EOSQL'
+          DO \$\$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_user WHERE usename = '${DB_USER}') THEN
+              CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';
+            END IF;
+            IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${DB_NAME}') THEN
+              CREATE DATABASE ${DB_NAME};
+            END IF;
+            GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};
+          END
+          \$\$;
+          EOSQL"
+        env:
+          DB_USER: pigeon_user
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: pigeon_devis
+
       - name: Create .env file
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat > ~/pigeon-devis-2-back/.env << 'EOL'
           NODE_ENV=production
           PORT=${{ secrets.PORT }}
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          DATABASE_URL=postgresql://pigeon_user:${{ secrets.DB_PASSWORD }}@localhost:5432/pigeon_devis
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN }}
           SMTP_HOST=${{ secrets.SMTP_HOST }}

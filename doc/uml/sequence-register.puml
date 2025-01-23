@@ -1,0 +1,47 @@
+@startuml
+title Création de compte utilisateur
+
+actor Utilisateur
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Base de données" as DB
+
+autonumber
+
+Utilisateur -> FE : Accède au formulaire d'inscription
+activate FE
+
+Utilisateur -> FE : Remplit le formulaire\n(email, mot de passe, nom, prénom)
+FE -> FE : Valide le format des données
+
+alt Données invalides
+    FE --> Utilisateur : Affiche les erreurs de validation
+end
+
+FE -> BE : POST /api/auth/register
+activate BE
+
+BE -> BE : Valide les données
+
+alt Email déjà utilisé
+    BE --> FE : 409 Conflict
+    FE --> Utilisateur : Affiche "Email déjà utilisé"
+else Données valides
+    BE -> BE : Hash du mot de passe
+    BE -> DB : Crée l'utilisateur
+    activate DB
+    DB --> BE : Confirme la création
+    deactivate DB
+    
+    BE -> BE : Génère le lien de confirmation
+    BE -> BE : Prépare l'email de confirmation
+    BE --> FE : 201 Created
+    deactivate BE
+    
+    FE --> Utilisateur : Affiche "Compte créé avec succès"
+    FE --> Utilisateur : "Vérifiez votre email"
+end
+
+deactivate FE
+
+@enduml 

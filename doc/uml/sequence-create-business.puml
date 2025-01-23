@@ -1,0 +1,44 @@
+@startuml
+title Création d'une entreprise
+
+actor Utilisateur
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Base de données" as DB
+
+autonumber
+
+Utilisateur -> FE : Accède au formulaire de création d'entreprise
+activate FE
+
+Utilisateur -> FE : Remplit le formulaire\n(SIRET, adresse, etc.)
+FE -> FE : Valide le format des données
+
+alt Données invalides
+    FE --> Utilisateur : Affiche les erreurs de format
+end
+
+FE -> BE : POST /api/business
+activate BE
+
+BE -> BE : Valide le format SIRET\n(14 chiffres)
+
+alt Erreur de validation
+    BE --> FE : 400 Bad Request
+    FE --> Utilisateur : Affiche les erreurs
+else Données valides
+    BE -> DB : Crée l'entreprise
+    activate DB
+    DB --> BE : Confirme la création
+    deactivate DB
+    
+    BE --> FE : 201 Created
+    deactivate BE
+    
+    FE -> FE : Redirige vers le tableau de bord
+    FE --> Utilisateur : "Entreprise créée avec succès"
+end
+
+deactivate FE
+
+@enduml 

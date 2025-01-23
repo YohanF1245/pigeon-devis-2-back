@@ -1,0 +1,54 @@
+@startuml
+title Connexion utilisateur
+
+actor Utilisateur
+participant "Frontend" as FE
+participant "Backend" as BE
+database "Base de données" as DB
+
+autonumber
+
+Utilisateur -> FE : Accède au formulaire de connexion
+activate FE
+
+Utilisateur -> FE : Saisit email et mot de passe
+FE -> FE : Valide le format des données
+
+alt Données invalides
+    FE --> Utilisateur : Affiche les erreurs de format
+end
+
+FE -> BE : POST /api/auth/login
+activate BE
+
+BE -> DB : Recherche l'utilisateur par email
+activate DB
+DB --> BE : Retourne les données utilisateur
+deactivate DB
+
+alt Utilisateur non trouvé
+    BE --> FE : 401 Unauthorized
+    FE --> Utilisateur : "Email ou mot de passe incorrect"
+else Utilisateur non vérifié
+    BE --> FE : 403 Forbidden
+    FE --> Utilisateur : "Veuillez vérifier votre compte"
+else Utilisateur trouvé
+    BE -> BE : Vérifie le mot de passe
+    
+    alt Mot de passe incorrect
+        BE --> FE : 401 Unauthorized
+        FE --> Utilisateur : "Email ou mot de passe incorrect"
+    else Mot de passe correct
+        BE -> BE : Génère le JWT
+        BE --> FE : 200 OK avec JWT
+        deactivate BE
+        
+        FE -> FE : Stocke le JWT
+        FE -> FE : Redirige vers le tableau de bord
+        FE --> Utilisateur : Affiche "Connexion réussie"
+    end
+end
+
+deactivate FE
+
+@enduml 

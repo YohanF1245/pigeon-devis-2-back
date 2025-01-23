@@ -1,0 +1,258 @@
+@startuml
+
+' Interfaces
+interface Document {
+    + generatePDF(): void
+    + calculateTotal(): Decimal
+    + validate(): Boolean
+}
+
+interface Addressable {
+    + getFullAddress(): String
+    + validateAddress(): Boolean
+}
+
+' Services
+class DashboardService {
+    + getBusinessStatistics(businessId: UUID): BusinessStatistics
+    + getMonthlyRevenue(businessId: UUID, month: Integer, year: Integer): Decimal
+    + getYearlyRevenue(businessId: UUID, year: Integer): Decimal
+    + getTopCustomers(businessId: UUID, limit: Integer): List<Customer>
+    + getOverdueInvoices(businessId: UUID): List<Invoice>
+    + getPendingEstimates(businessId: UUID): List<Estimate>
+    + getRevenueChart(businessId: UUID, startDate: Date, endDate: Date): Chart
+    + getExpenseChart(businessId: UUID, startDate: Date, endDate: Date): Chart
+}
+
+class BusinessStatistics {
+    - totalSales: Decimal
+    - totalExpenses: Decimal
+    - totalCustomers: Integer
+    - unpaidInvoices: Integer
+    - unpaidEstimates: Integer
+    - averageInvoiceAmount: Decimal
+    - customerGrowthRate: Decimal
+}
+
+' Enums
+enum UserRole {
+    ADMIN
+    USER
+}
+
+enum CustomerType {
+    PROFESSIONAL
+    INDIVIDUAL
+}
+
+enum EstimateStatus {
+    EMITTED
+    ACCEPTED
+}
+
+enum InvoiceStatus {
+    EMITTED
+    PAID
+}
+
+enum PerformanceType {
+    SERVICE
+    PRODUCT
+}
+
+' Classes
+class User {
+    - id: UUID
+    - email: String
+    - password: String
+    - firstName: String
+    - lastName: String
+    - phone: String
+    - signaturePath: String
+    - isVerified: Boolean
+    - userRole: UserRole
+    + register(): void
+    + login(): Boolean
+    + resetPassword(): void
+    + validateEmail(): Boolean
+    + getFullName(): String
+    + uploadSignature(file: File): void
+}
+
+class Business implements Addressable {
+    - id: UUID
+    - ownerId: UUID
+    - siret: String
+    - apeCode: String
+    - taxCode: String
+    - logoPath: String
+    - addressId: UUID
+    + create(): void
+    + update(): void
+    + delete(): void
+    + validateSIRET(): Boolean
+    + uploadLogo(file: File): void
+    + getFullAddress(): String
+    + validateAddress(): Boolean
+}
+
+class Customer implements Addressable {
+    - id: UUID
+    - businessId: UUID
+    - type: CustomerType
+    - businessName: String
+    - firstName: String
+    - lastName: String
+    - email: String
+    - phone: String
+    - addressId: UUID
+    + create(): void
+    + update(): void
+    + delete(): void
+    + validateEmail(): Boolean
+    + getFullName(): String
+    + getFullAddress(): String
+    + validateAddress(): Boolean
+}
+
+class Address {
+    - id: UUID
+    - streetNumber: String
+    - streetName: String
+    - zipCode: String
+    - city: String
+    - complement: String
+    + add(): void
+    + update(): void
+    + delete(): void
+    + formatAddress(): String
+    + validateZipCode(): Boolean
+}
+
+class PasswordResetLink {
+    - id: UUID
+    - userId: UUID
+    - resetLink: String
+    - createdAt: Timestamp
+    - expiresAt: Timestamp
+    - isUsed: Boolean
+    + create(): void
+    + validate(): Boolean
+    + use(): void
+    + isExpired(): Boolean
+}
+
+class Estimate implements Document {
+    - id: UUID
+    - businessId: UUID
+    - customerId: UUID
+    - status: EstimateStatus
+    - discount: Decimal
+    - expirationDate: Date
+    - deliveryTime: Integer
+    - createdAt: Timestamp
+    - updatedAt: Timestamp
+    + create(): void
+    + update(): void
+    + delete(): void
+    + generatePDF(): void
+    + calculateTotal(): Decimal
+    + validate(): Boolean
+    + approve(): void
+    + isExpired(): Boolean
+    + convertToInvoice(): Invoice
+}
+
+class Invoice implements Document {
+    - id: UUID
+    - estimateId: UUID
+    - status: InvoiceStatus
+    - surcharge: Decimal
+    - paymentLimit: Date
+    - paymentDate: Date
+    - createdAt: Timestamp
+    - updatedAt: Timestamp
+    + create(): void
+    + update(): void
+    + delete(): void
+    + generatePDF(): void
+    + calculateTotal(): Decimal
+    + validate(): Boolean
+    + markAsPaid(paymentDate: Date): void
+    + isOverdue(): Boolean
+    + calculateLateFees(): Decimal
+}
+
+class Expense {
+    - id: UUID
+    - businessId: UUID
+    - title: String
+    - amount: Decimal
+    - expenseDate: Date
+    - createdAt: Timestamp
+    - updatedAt: Timestamp
+    + create(): void
+    + update(): void
+    + delete(): void
+    + validateAmount(): Boolean
+    + getMonthlyTotal(): Decimal
+}
+
+class Performance {
+    - id: UUID
+    - businessId: UUID
+    - name: String
+    - description: String
+    - price: Decimal
+    - unit: String
+    - isRecurrent: Boolean
+    - type: PerformanceType
+    - taxRate: Decimal
+    - createdAt: Timestamp
+    - updatedAt: Timestamp
+    + create(): void
+    + update(): void
+    + delete(): void
+    + validatePrice(): Boolean
+    + applyTax(): Decimal
+    + duplicate(): Performance
+}
+
+class EstimatePerformance {
+    - id: UUID
+    - estimateId: UUID
+    - performanceId: UUID
+    - quantity: Integer
+    - unitPrice: Decimal
+    - taxRate: Decimal
+    - discount: Decimal
+    + create(): void
+    + delete(): void
+    + calculateSubTotal(): Decimal
+    + applyDiscount(): Decimal
+}
+
+' Relations
+' Entity Relations
+User "1" -- "0..*" Business : owns
+Business "1" -- "0..*" Customer : has
+Customer "1" -- "0..*" Address : resides
+Business "1" -- "0..*" Address : located
+User "1" -- "0..*" PasswordResetLink : has
+Business "1" -- "0..*" Estimate : creates
+Estimate "1" -- "0..1" Invoice : generates
+Business "1" -- "0..*" Expense : incurs
+Business "1" -- "0..*" Performance : offers
+Estimate "1" -- "0..*" EstimatePerformance : includes
+Performance "1" -- "0..*" EstimatePerformance : consists of
+
+' Enum Relations
+User "*" -- "1" UserRole : has role
+Customer "*" -- "1" CustomerType : has type
+Estimate "*" -- "1" EstimateStatus : has status
+Invoice "*" -- "1" InvoiceStatus : has status
+Performance "*" -- "1" PerformanceType : has type
+
+note "DashboardService provides business analytics\nwithout persistent storage" as N1
+
+@enduml

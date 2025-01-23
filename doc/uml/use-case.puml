@@ -1,0 +1,67 @@
+@startuml
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Utilisateur" as user
+
+rectangle "Pigeon Devis" {
+    package "Gestion du Compte" {
+        usecase "S'inscrire" as INS
+        usecase "Se connecter" as CONN
+        usecase "Gérer son profil" as PROF
+    }
+
+    package "Gestion Administrative" {
+        usecase "Créer une entreprise" as GE
+        usecase "Gérer les dépenses" as GD2
+        usecase "Consulter le tableau de bord" as TB
+    }
+
+    package "Gestion Commerciale" {
+        usecase "Gérer les prestations" as GP
+        usecase "Gérer les devis" as GD
+        usecase "Gérer les factures" as GF
+        usecase "Gérer les clients" as GC2
+    }
+}
+
+' Relations utilisateur avec toutes les fonctionnalités
+user --> INS
+user --> CONN
+user --> PROF
+user --> GE
+user --> GP
+user --> GD
+user --> GF
+user --> GC2
+user --> GD2
+user --> TB
+
+' Dépendances
+PROF ..> CONN : <<require>>
+GE ..> CONN : <<require>>
+GP ..> CONN : <<require>>
+GD ..> CONN : <<require>>
+GF ..> CONN : <<require>>
+GC2 ..> CONN : <<require>>
+GD2 ..> CONN : <<require>>
+TB ..> CONN : <<require>>
+
+GP ..> GE : <<require>>
+GD ..> GE : <<require>>
+GF ..> GE : <<require>>
+GC2 ..> GE : <<require>>
+GD2 ..> GE : <<require>>
+TB ..> GE : <<require>>
+
+' Relations métier
+GD ..> GC2 : <<include>>
+GD ..> GP : <<include>>
+GD ..> GF : <<extend>>
+
+note "Toutes les fonctionnalités sauf inscription\nnécessitent une connexion" as N1
+note "Les fonctionnalités de gestion nécessitent\nune entreprise" as N2
+
+@enduml 

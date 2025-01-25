@@ -4,16 +4,16 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-pigeon-devis}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pigeon-devis}
-      POSTGRES_DB: ${POSTGRES_DB:-pigeon-devis}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-pigeon_devis}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./doc/database-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pigeon-devis}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,17 +30,24 @@ services:
       - ./uploads:/app/uploads
       - ./test:/app/test
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=${PORT:-3000}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-pigeon-devis}:${POSTGRES_PASSWORD:-pigeon-devis}@postgres:5432/${POSTGRES_DB:-pigeon-devis}
-      - JWT_SECRET=${JWT_SECRET:-mysecretkey}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600}
-      - MAIL_HOST=${MAIL_HOST}
-      - MAIL_PORT=${MAIL_PORT}
+      - API_PREFIX=${API_PREFIX:-/api}
+      - UPLOAD_DEST=${UPLOAD_DEST:-./uploads}
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-pigeon_devis}
+      - JWT_SECRET=${JWT_SECRET:-votre_secret_tres_securise}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-1d}
+      - MAIL_HOST=${MAIL_HOST:-smtp.gmail.com}
+      - MAIL_PORT=${MAIL_PORT:-465}
       - MAIL_USER=${MAIL_USER}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_FROM=${MAIL_FROM}
-      - APP_URL=${APP_URL:-http://localhost:3000}
+      - MAIL_SECURE=${MAIL_SECURE:-true}
     depends_on:
       postgres:
         condition: service_healthy

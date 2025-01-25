@@ -18,7 +18,7 @@
 - B.R. 3: User email must not be already used
 - B.R. 4: A user must input a valid password to create an account
 - B.R. 5: Account must be verified by mail confirmation
-- B.R. 6: User can't request a password reset link
+- B.R. 6: User can request a password reset link
 
 ## Role management
 - B.R. 7: A user must have exactly one role

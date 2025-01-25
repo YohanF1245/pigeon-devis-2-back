@@ -1,0 +1,40 @@
+FROM node:20-alpine
+
+# Installation des dépendances système nécessaires
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    postgresql-client
+
+# Création des répertoires nécessaires
+WORKDIR /app
+RUN mkdir -p \
+    uploads/signatures \
+    uploads/logos \
+    uploads/documents \
+    dist
+
+# Installation des dépendances Node.js
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copie des sources
+COPY . .
+
+# Permissions pour les dossiers d'upload
+RUN chown -R node:node /app && \
+    chmod -R 755 /app/uploads
+
+# Changement d'utilisateur pour plus de sécurité
+USER node
+
+# Variables d'environnement par défaut
+ENV NODE_ENV=development \
+    PORT=3000
+
+# Exposition du port
+EXPOSE $PORT
+
+# Script de démarrage
+CMD ["npm", "run", "start:dev"] 

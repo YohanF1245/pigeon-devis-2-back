@@ -1,0 +1,55 @@
+FROM node:20-alpine AS builder
+
+# Installation des dépendances système nécessaires pour la compilation
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++
+
+# Préparation de l'environnement de build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copie des sources et compilation
+COPY . .
+RUN npm run build
+
+# Image finale
+FROM node:20-alpine
+
+# Installation des dépendances système nécessaires
+RUN apk add --no-cache postgresql-client
+
+# Création des répertoires nécessaires
+WORKDIR /app
+RUN mkdir -p \
+    uploads/signatures \
+    uploads/logos \
+    uploads/documents \
+    dist
+
+# Copie des fichiers nécessaires depuis l'étape de build
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/src/modules/mail/templates ./dist/modules/mail/templates
+
+# Installation des dépendances de production uniquement
+RUN npm install --omit=dev --legacy-peer-deps
+
+# Permissions pour les dossiers d'upload
+RUN chown -R node:node /app && \
+    chmod -R 755 /app/uploads
+
+# Changement d'utilisateur pour plus de sécurité
+USER node
+
+# Variables d'environnement par défaut
+ENV NODE_ENV=production \
+    PORT=3000
+
+# Exposition du port
+EXPOSE $PORT
+
+# Script de démarrage
+CMD ["node", "dist/main"] 

@@ -9,7 +9,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Création des dossiers avec les bonnes permissions
-RUN mkdir -p /app/uploads /app/dist/modules \
+RUN mkdir -p /app/uploads /app/dist/modules/mail/templates \
     && chown -R node:node /app \
     && chmod -R 755 /app/dist \
     && chmod -R 755 /app/uploads

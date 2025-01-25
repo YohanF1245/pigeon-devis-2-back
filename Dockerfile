@@ -9,7 +9,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 
 # Création des dossiers avec les bonnes permissions
-RUN mkdir -p /app/uploads /app/dist/modules/mail/templates \
+RUN mkdir -p /app/uploads /app/dist \
     && chown -R node:node /app \
     && chmod -R 755 /app/dist \
     && chmod -R 755 /app/uploads
@@ -24,5 +24,5 @@ ENV NODE_ENV=development \
 # Exposition du port
 EXPOSE $PORT
 
-# Nettoyage et démarrage de l'application en mode développement
-CMD rm -rf /app/dist/* || true && npm run start:dev 
+# Démarrage de l'application en mode développement
+CMD ["npm", "run", "start:dev"] 

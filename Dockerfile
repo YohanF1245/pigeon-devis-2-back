@@ -8,9 +8,6 @@ RUN npm install --legacy-peer-deps
 # Copie des sources
 COPY . .
 
-# Changement d'utilisateur pour plus de sécurité
-USER node
-
 # Variables d'environnement par défaut
 ENV NODE_ENV=development \
     PORT=3000

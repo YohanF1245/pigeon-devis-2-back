@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '../src/modules/auth/entities/user.entity';
 import { EmailVerification } from '../src/modules/auth/entities/email-verification.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-describe('AppController (e2e)', () => {
+describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let userRepository: Repository<User>;
   let emailVerificationRepository: Repository<EmailVerification>;
@@ -53,7 +53,7 @@ describe('AppController (e2e)', () => {
 
         expect(response.body).toHaveProperty('user_id');
         expect(response.body.email).toBe(testUser.email);
-        expect(response.body.is_verified).toBe(false);
+        expect(response.body.is_email_verified).toBe(false);
 
         const verificationRecord = await emailVerificationRepository.findOne({
           where: { user_id: response.body.user_id }
@@ -81,7 +81,7 @@ describe('AppController (e2e)', () => {
         await userRepository.save({
           ...testUser,
           password: hashedPassword,
-          is_verified: true
+          is_email_verified: true
         });
       });
 
@@ -117,7 +117,7 @@ describe('AppController (e2e)', () => {
         const user = await userRepository.save({
           ...testUser,
           password: hashedPassword,
-          is_verified: false
+          is_email_verified: false
         });
         userId = user.user_id;
 
@@ -135,7 +135,7 @@ describe('AppController (e2e)', () => {
           .expect(200);
 
         const user = await userRepository.findOne({ where: { user_id: userId } });
-        expect(user.is_verified).toBe(true);
+        expect(user.is_email_verified).toBe(true);
       });
 
       it('devrait rejeter un token invalide', async () => {
@@ -145,4 +145,4 @@ describe('AppController (e2e)', () => {
       });
     });
   });
-});
+}); 

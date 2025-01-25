@@ -8,12 +8,6 @@ RUN npm install --legacy-peer-deps
 # Copie des sources
 COPY . .
 
-# Création des dossiers avec les bonnes permissions
-RUN mkdir -p /app/uploads /app/dist \
-    && chown -R node:node /app \
-    && chmod -R 755 /app/dist \
-    && chmod -R 755 /app/uploads
-
 # Changement d'utilisateur pour plus de sécurité
 USER node
 

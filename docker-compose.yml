@@ -26,6 +26,7 @@ services:
       - ./src:/app/src
       - dist_volume:/app/dist
       - uploads_volume:/app/uploads
+      - ./src/modules/mail/templates:/app/dist/modules/mail/templates
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,9 +42,6 @@ services:
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_FROM=${MAIL_FROM}
       - APP_URL=${APP_URL:-http://localhost:3000}
-    volumes:
-      - ./uploads:/app/uploads
-      - ./src/modules/mail/templates:/app/dist/modules/mail/templates
     restart: unless-stopped
 
 volumes:

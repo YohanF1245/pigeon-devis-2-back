@@ -10,11 +10,13 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Validation globale
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // CORS
   app.enableCors();
@@ -43,6 +45,8 @@ async function bootstrap() {
   const port = configService.get('PORT');
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation is available at: http://localhost:${port}${apiPrefix}/docs`);
+  console.log(
+    `Swagger documentation is available at: http://localhost:${port}${apiPrefix}/docs`,
+  );
 }
 bootstrap();

@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  init-volumes:
+    image: alpine
+    command: sh -c "chmod -R 777 /dist && chmod -R 777 /uploads"
+    volumes:
+      - dist_volume:/dist
+      - uploads_volume:/uploads
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -28,6 +35,8 @@ services:
       - uploads_volume:/app/uploads
       - ./src/modules/mail/templates:/app/dist/modules/mail/templates
     depends_on:
+      init-volumes:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     environment:

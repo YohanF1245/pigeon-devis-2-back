@@ -24,5 +24,5 @@ ENV NODE_ENV=development \
 # Exposition du port
 EXPOSE $PORT
 
-# Démarrage de l'application en mode développement
-CMD ["npm", "run", "start:dev"] 
+# Nettoyage et démarrage de l'application en mode développement
+CMD rm -rf /app/dist/* && npm run start:dev 
